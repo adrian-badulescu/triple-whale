@@ -1,0 +1,72 @@
+namespace Nop.Plugin.Widgets.TripleWhale;
+
+/// <summary>
+/// Represents plugin constants
+/// </summary>
+public static class TripleWhaleDefaults
+{
+    /// <summary>
+    /// Gets the plugin system name
+    /// </summary>
+    public static string SystemName => "Widgets.TripleWhale";
+
+    /// <summary>
+    /// Gets the configuration route name
+    /// </summary>
+    public static string ConfigurationRouteName => "Plugin.Widgets.TripleWhale.Configure";
+
+    /// <summary>
+    /// Gets the Triple Whale API base URL
+    /// </summary>
+    public static string ApiBaseUrl => "https://api.triplewhale.com/api/v2";
+
+    /// <summary>
+    /// Gets the validate API key endpoint
+    /// </summary>
+    public static string ValidateApiKeyEndpoint => "/users/api-keys/me";
+
+    /// <summary>
+    /// Gets the data-in orders endpoint
+    /// </summary>
+    public static string OrdersEndpoint => "/data-in/orders";
+
+    /// <summary>
+    /// Gets the data-in bulk orders endpoint
+    /// </summary>
+    public static string BulkOrdersEndpoint => "/data-in/orders/bulk";
+
+    /// <summary>
+    /// Gets the data-in customers endpoint
+    /// </summary>
+    public static string CustomersEndpoint => "/data-in/customers";
+
+    /// <summary>
+    /// Gets the data-in products endpoint
+    /// </summary>
+    public static string ProductsEndpoint => "/data-in/products";
+
+    /// <summary>
+    /// Gets the data-in offline events endpoint
+    /// </summary>
+    public static string EventsEndpoint => "/data-in/event";
+
+    /// <summary>
+    /// Gets the HTTP header used to authenticate API requests
+    /// </summary>
+    public static string ApiKeyHeader => "X-Triplewhale-Api-Key";
+
+    /// <summary>
+    /// Gets the scheduled background sync task type
+    /// </summary>
+    public static string BackgroundSyncTaskType => "Nop.Plugin.Widgets.TripleWhale.Services.TripleWhaleBackgroundSyncTask";
+
+    /// <summary>
+    /// Gets the scheduled background sync task name
+    /// </summary>
+    public static string BackgroundSyncTaskName => "Triple Whale sync (Triple Whale plugin)";
+
+    /// <summary>
+    /// Gets the background sync interval in seconds (5 minutes)
+    /// </summary>
+    public static int BackgroundSyncIntervalSeconds => 300;
+}

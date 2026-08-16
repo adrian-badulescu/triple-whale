@@ -1,0 +1,18 @@
+Triple Whale for nopCommerce
+
+Triple Whale is an analytics and attribution platform for e-commerce. This plugin integrates the Triple Whale pixel and Data-In API into your nopCommerce store.
+
+Key features:
+
+- Pixel tracking — injects the Triple Whale base snippet into the storefront head, with page view, AddToCart and Purchase events.
+- Server-side events — sends offline events to Triple Whale so attribution works even when client-side JavaScript is blocked.
+- Order sync — pushes order records (line items, refunds, shipping, discounts) to Triple Whale.
+- Customer sync — pushes customer records (contact, address, consent) to Triple Whale.
+- Product sync — pushes the product catalog so Triple Whale can apply COGS and handling fees.
+- Retry queue — failed events are queued and retried with exponential backoff.
+- Logging — every API call is logged (request/response/status) for troubleshooting.
+
+Requirements:
+
+- A Triple Whale account with API keys (Data > APIs).
+- nopCommerce 4.90.

@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Copyright>Copyright © universalrestaurant.systems</Copyright>
+    <Company>universalrestaurant.systems</Company>
+    <Authors>universalrestaurant.systems</Authors>
+    <OutputPath>$(SolutionDir)\Presentation\Nop.Web\Plugins\Widgets.TripleWhale</OutputPath>
+    <OutDir>$(OutputPath)</OutDir>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="logo.png" />
+    <None Remove="plugin.json" />
+    <None Remove="Views\PublicInfo.cshtml" />
+    <None Remove="Views\_ViewImports.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="plugin.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\PublicInfo.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\_ViewImports.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(SolutionDir)\Presentation\Nop.Web\Nop.Web.csproj" />
+    <ClearPluginAssemblies Include="$(SolutionDir)\Build\ClearPluginAssemblies.proj" />
+  </ItemGroup>
+
+  <Target Name="NopTarget" AfterTargets="Build">
+    <MSBuild Projects="@(ClearPluginAssemblies)" Properties="PluginPath=$(OutDir)" Targets="NopClear" />
+  </Target>
+
+  <Target Name="CleanupPluginOutput" AfterTargets="NopTarget">
+    <RemoveDir Directories="$(OutDir)runtimes" />
+    <ItemGroup>
+      <NopWebFiles Include="$(OutDir)Nop.Web.deps.json" />
+      <NopWebFiles Include="$(OutDir)Nop.Web.runtimeconfig.json" />
+      <NopWebFiles Include="$(OutDir)Nop.Web.runtimeconfig.dev.json" />
+      <NopWebFiles Include="$(OutDir)Nop.Web.staticwebassets.endpoints.json" />
+      <NopWebFiles Include="$(OutDir)Nop.Web.staticwebassets.runtime.json" />
+    </ItemGroup>
+    <Delete Files="@(NopWebFiles)" />
+  </Target>
+
+</Project>

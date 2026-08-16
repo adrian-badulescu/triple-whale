@@ -1,0 +1,11 @@
+{
+  "Group": "Widgets",
+  "FriendlyName": "Triple Whale",
+  "SystemName": "Widgets.TripleWhale",
+  "Version": "4.90.1",
+  "SupportedVersions": [ "4.90" ],
+  "Author": "universalrestaurant.systems",
+  "DisplayOrder": 1,
+  "FileName": "Nop.Plugin.Widgets.TripleWhale.dll",
+  "Description": "Triple Whale attribution, pixel and server-side tracking for nopCommerce"
+}

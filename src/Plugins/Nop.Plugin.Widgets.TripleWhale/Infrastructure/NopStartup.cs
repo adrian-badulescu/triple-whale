@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nop.Core.Infrastructure;
+using Nop.Plugin.Widgets.TripleWhale.Services;
 
 namespace Nop.Plugin.Widgets.TripleWhale.Infrastructure;
 
@@ -12,7 +13,7 @@ public class NopStartup : INopStartup
 {
     public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
-        // API client and services are registered here in later phases.
+        services.AddScoped<TripleWhaleEventBuilder>();
     }
 
     public void Configure(IApplicationBuilder application)

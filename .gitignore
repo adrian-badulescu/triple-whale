@@ -19,3 +19,7 @@ packages/
 ## OS
 Thumbs.db
 .DS_Store
+
+## Distribution artifacts
+Downloads/
+

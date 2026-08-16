@@ -4,8 +4,8 @@ Triple Whale is an analytics and attribution platform for e-commerce. This plugi
 
 Key features:
 
-- Pixel tracking — injects the Triple Whale base snippet into the storefront head, with page view, AddToCart and Purchase events.
-- Server-side events — sends offline events to Triple Whale so attribution works even when client-side JavaScript is blocked.
+- Pixel tracking — injects the Triple Whale base snippet into the storefront head (page view tracking).
+- Server-side events — sends conversion events (Purchase, Refund) to Triple Whale so attribution works even when client-side JavaScript is blocked.
 - Order sync — pushes order records (line items, refunds, shipping, discounts) to Triple Whale.
 - Customer sync — pushes customer records (contact, address, consent) to Triple Whale.
 - Product sync — pushes the product catalog so Triple Whale can apply COGS and handling fees.

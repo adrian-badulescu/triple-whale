@@ -89,7 +89,7 @@ public class TripleWhaleEventBuilder
             ShippingAddress = await BuildAddressAsync(address),
             ShippingPrice = order.OrderShippingInclTax,
             TotalDiscounts = order.OrderDiscount,
-            TotalTax = order.OrderTax,
+            Taxes = order.OrderTax,
             PaymentGatewayNames = string.IsNullOrEmpty(order.PaymentMethodSystemName)
                 ? null
                 : new List<string> { order.PaymentMethodSystemName },
@@ -145,7 +145,7 @@ public class TripleWhaleEventBuilder
                     Id = product.Id.ToString(),
                     Name = product.Name,
                     Sku = product.Sku,
-                    Price = product.Price
+                    VariantPrice = product.Price
                 }
             },
             Tags = new List<string>()

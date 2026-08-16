@@ -22,7 +22,7 @@ public class OrderRecordDto
     [JsonPropertyName("shipping_address")] public OrderAddressDto ShippingAddress { get; set; }
     [JsonPropertyName("shipping_price")] public decimal ShippingPrice { get; set; }
     [JsonPropertyName("total_discounts")] public decimal TotalDiscounts { get; set; }
-    [JsonPropertyName("total_tax")] public decimal TotalTax { get; set; }
+    [JsonPropertyName("taxes")] public decimal Taxes { get; set; }
     [JsonPropertyName("payment_gateway_names")] public List<string> PaymentGatewayNames { get; set; }
     [JsonPropertyName("source_name")] public string SourceName { get; set; }
     [JsonPropertyName("tags")] public List<string> Tags { get; set; }

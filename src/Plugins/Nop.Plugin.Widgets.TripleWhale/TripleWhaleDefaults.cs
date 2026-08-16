@@ -53,7 +53,37 @@ public static class TripleWhaleDefaults
     /// <summary>
     /// Gets the HTTP header used to authenticate API requests
     /// </summary>
-    public static string ApiKeyHeader => "X-Triplewhale-Api-Key";
+    public static string ApiKeyHeader => "x-api-key";
+
+    /// <summary>
+    /// Gets the maximum number of retry attempts for transient API failures (initial call + retries)
+    /// </summary>
+    public static int MaxRetryAttempts => 4;
+
+    /// <summary>
+    /// Gets the initial retry backoff delay in milliseconds
+    /// </summary>
+    public static int RetryBaseDelayMilliseconds => 2000;
+
+    /// <summary>
+    /// Gets the maximum retry backoff delay in milliseconds
+    /// </summary>
+    public static int RetryMaxDelayMilliseconds => 32000;
+
+    /// <summary>
+    /// Gets the maximum number of persisted retry attempts for a sync queue item
+    /// </summary>
+    public static int MaxQueueRetryAttempts => 5;
+
+    /// <summary>
+    /// Gets the base delay (in minutes) between sync queue retries
+    /// </summary>
+    public static int QueueRetryBaseMinutes => 5;
+
+    /// <summary>
+    /// Gets the maximum delay (in minutes) between sync queue retries
+    /// </summary>
+    public static int QueueRetryMaxMinutes => 360;
 
     /// <summary>
     /// Gets the scheduled background sync task type

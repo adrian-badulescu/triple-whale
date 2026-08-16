@@ -1,9 +1,11 @@
 using Nop.Core.Domain.Cms;
+using Nop.Core.Domain.ScheduleTasks;
 using Nop.Plugin.Widgets.TripleWhale.Components;
 using Nop.Services.Cms;
 using Nop.Services.Configuration;
 using Nop.Services.Localization;
 using Nop.Services.Plugins;
+using Nop.Services.ScheduleTasks;
 using Nop.Web.Framework.Infrastructure;
 using Nop.Web.Framework.Mvc.Routing;
 
@@ -16,16 +18,19 @@ public class TripleWhalePlugin : BasePlugin, IWidgetPlugin
 {
     private readonly ILocalizationService _localizationService;
     private readonly INopUrlHelper _nopUrlHelper;
+    private readonly IScheduleTaskService _scheduleTaskService;
     private readonly ISettingService _settingService;
     private readonly WidgetSettings _widgetSettings;
 
     public TripleWhalePlugin(ILocalizationService localizationService,
         INopUrlHelper nopUrlHelper,
+        IScheduleTaskService scheduleTaskService,
         ISettingService settingService,
         WidgetSettings widgetSettings)
     {
         _localizationService = localizationService;
         _nopUrlHelper = nopUrlHelper;
+        _scheduleTaskService = scheduleTaskService;
         _settingService = settingService;
         _widgetSettings = widgetSettings;
     }
@@ -97,6 +102,15 @@ public class TripleWhalePlugin : BasePlugin, IWidgetPlugin
             ["Plugins.Widgets.TripleWhale.Fields.EnableProductSync"] = "Enable product sync"
         });
 
+        // schedule the background sync queue processor
+        await _scheduleTaskService.InsertTaskAsync(new ScheduleTask
+        {
+            Type = TripleWhaleDefaults.BackgroundSyncTaskType,
+            Name = TripleWhaleDefaults.BackgroundSyncTaskName,
+            Seconds = TripleWhaleDefaults.BackgroundSyncIntervalSeconds,
+            Enabled = true
+        });
+
         await base.InstallAsync();
     }
 
@@ -113,6 +127,10 @@ public class TripleWhalePlugin : BasePlugin, IWidgetPlugin
 
         await _settingService.DeleteSettingAsync<TripleWhaleSettings>();
         await _localizationService.DeleteLocaleResourcesAsync("Plugins.Widgets.TripleWhale");
+
+        var syncTask = await _scheduleTaskService.GetTaskByTypeAsync(TripleWhaleDefaults.BackgroundSyncTaskType);
+        if (syncTask is not null)
+            await _scheduleTaskService.DeleteTaskAsync(syncTask);
 
         await base.UninstallAsync();
     }

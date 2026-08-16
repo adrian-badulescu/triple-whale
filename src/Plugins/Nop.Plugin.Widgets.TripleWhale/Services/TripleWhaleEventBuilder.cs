@@ -169,6 +169,8 @@ public class TripleWhaleEventBuilder
                 Phone = phone,
                 PixelClientId = pixelClientId
             },
+            EventId = Guid.NewGuid().ToString("N"),
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             Source = source,
             Campaign = campaign,
             Ad = ad,

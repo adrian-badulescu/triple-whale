@@ -1,0 +1,103 @@
+@model ConfigurationModel
+@{
+    Layout = "_ConfigurePlugin";
+}
+
+<form asp-controller="TripleWhale" asp-action="Configure" method="post">
+    <div class="cards-group">
+        <div class="card card-default">
+            <div class="card-body">
+                <p>@T("Plugins.Widgets.TripleWhale.Instructions")</p>
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="ApiKey" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="ApiKey" />
+                        <span asp-validation-for="ApiKey"></span>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="ShopUrl" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="ShopUrl" />
+                        <span asp-validation-for="ShopUrl"></span>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="PixelSnippet" />
+                    </div>
+                    <div class="col-md-9">
+                        <textarea asp-for="PixelSnippet" class="form-control" rows="10"></textarea>
+                        <span asp-validation-for="PixelSnippet"></span>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="EnablePixel" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="EnablePixel" />
+                        <span asp-validation-for="EnablePixel"></span>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="EnableServerSideEvents" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="EnableServerSideEvents" />
+                        <span asp-validation-for="EnableServerSideEvents"></span>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="EnableOrderSync" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="EnableOrderSync" />
+                        <span asp-validation-for="EnableOrderSync"></span>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="EnableCustomerSync" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="EnableCustomerSync" />
+                        <span asp-validation-for="EnableCustomerSync"></span>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="EnableProductSync" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="EnableProductSync" />
+                        <span asp-validation-for="EnableProductSync"></span>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-9 offset-md-3">
+                        <button type="submit" name="save" class="btn btn-primary">@T("Admin.Common.Save")</button>
+                        <button type="submit" name="testConnection" value="true" class="btn btn-default ml-2">@T("Plugins.Widgets.TripleWhale.Button.TestConnection")</button>
+                        <button type="submit" name="syncAll" value="true" class="btn btn-default ml-2">@T("Plugins.Widgets.TripleWhale.Button.SyncAll")</button>
+                        <button type="submit" name="downloadLogs" value="true" class="btn btn-default ml-2">@T("Plugins.Widgets.TripleWhale.Button.DownloadLogs")</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

@@ -99,7 +99,17 @@ public class TripleWhalePlugin : BasePlugin, IWidgetPlugin
             ["Plugins.Widgets.TripleWhale.Fields.EnableServerSideEvents"] = "Enable server-side events",
             ["Plugins.Widgets.TripleWhale.Fields.EnableOrderSync"] = "Enable order sync",
             ["Plugins.Widgets.TripleWhale.Fields.EnableCustomerSync"] = "Enable customer sync",
-            ["Plugins.Widgets.TripleWhale.Fields.EnableProductSync"] = "Enable product sync"
+            ["Plugins.Widgets.TripleWhale.Fields.EnableProductSync"] = "Enable product sync",
+
+            ["Plugins.Widgets.TripleWhale.Instructions"] = "Enter your Triple Whale API key and shop URL below. The pixel snippet is optional and only required for client-side tracking.",
+            ["Plugins.Widgets.TripleWhale.Fields.ApiKey.Required"] = "API key is required",
+            ["Plugins.Widgets.TripleWhale.Fields.ShopUrl.Required"] = "Shop URL is required",
+            ["Plugins.Widgets.TripleWhale.Button.TestConnection"] = "Test connection",
+            ["Plugins.Widgets.TripleWhale.Button.SyncAll"] = "Sync all",
+            ["Plugins.Widgets.TripleWhale.Button.DownloadLogs"] = "Download logs",
+            ["Plugins.Widgets.TripleWhale.TestConnection.Success"] = "Connection to Triple Whale was successful.",
+            ["Plugins.Widgets.TripleWhale.TestConnection.Failed"] = "Connection to Triple Whale failed: {0}",
+            ["Plugins.Widgets.TripleWhale.SyncAll.Success"] = "{0} item(s) were queued for sync to Triple Whale."
         });
 
         // schedule the background sync queue processor

@@ -1,4 +1,5 @@
 using Nop.Core.Domain.Customers;
+using Nop.Core.Domain.Messages;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Events;
 using Nop.Plugin.Widgets.TripleWhale.Domain;
@@ -15,22 +16,27 @@ public class TripleWhaleEventConsumer :
     IConsumer<OrderPaidEvent>,
     IConsumer<OrderRefundedEvent>,
     IConsumer<CustomerRegisteredEvent>,
-    IConsumer<EntityUpdatedEvent<Customer>>
+    IConsumer<EntityUpdatedEvent<Customer>>,
+    IConsumer<EntityInsertedEvent<ShoppingCartItem>>,
+    IConsumer<EmailSubscribedEvent>
 {
     private readonly TripleWhaleSettings _settings;
     private readonly TripleWhaleEventBuilder _eventBuilder;
     private readonly TripleWhaleSyncService _syncService;
+    private readonly TripleWhalePixelService _pixelService;
     private readonly ICustomerService _customerService;
 
     public TripleWhaleEventConsumer(
         TripleWhaleSettings settings,
         TripleWhaleEventBuilder eventBuilder,
         TripleWhaleSyncService syncService,
+        TripleWhalePixelService pixelService,
         ICustomerService customerService)
     {
         _settings = settings;
         _eventBuilder = eventBuilder;
         _syncService = syncService;
+        _pixelService = pixelService;
         _customerService = customerService;
     }
 
@@ -78,6 +84,9 @@ public class TripleWhaleEventConsumer :
         if (eventMessage?.Customer is not { } customer)
             return;
 
+        if (_settings.EnablePixel)
+            await _pixelService.SendContactEventAsync(customer.Email);
+
         if (!_settings.EnableCustomerSync)
             return;
 
@@ -98,6 +107,34 @@ public class TripleWhaleEventConsumer :
 
         var dto = await _eventBuilder.BuildCustomerAsync(customer);
         await _syncService.EnqueueAsync(TripleWhaleEntityType.Customer, customer.Id.ToString(), "customer.updated", dto);
+    }
+
+    /// <summary>
+    /// Handle the shopping cart item inserted event (add to cart)
+    /// </summary>
+    public async Task HandleEventAsync(EntityInsertedEvent<ShoppingCartItem> eventMessage)
+    {
+        if (eventMessage?.Entity is not { } item)
+            return;
+
+        if (!_settings.EnablePixel)
+            return;
+
+        await _pixelService.SendAddToCartEventAsync(item);
+    }
+
+    /// <summary>
+    /// Handle the email subscribed event (newsletter)
+    /// </summary>
+    public async Task HandleEventAsync(EmailSubscribedEvent eventMessage)
+    {
+        if (eventMessage?.Subscription is not { } subscription)
+            return;
+
+        if (!_settings.EnablePixel)
+            return;
+
+        await _pixelService.SendContactEventAsync(subscription.Email);
     }
 
     /// <summary>

@@ -1,27 +1,25 @@
 using Microsoft.AspNetCore.Mvc;
+using Nop.Plugin.Widgets.TripleWhale.Services;
 using Nop.Web.Framework.Components;
 
 namespace Nop.Plugin.Widgets.TripleWhale.Components;
 
 /// <summary>
-/// View component that injects the Triple Whale pixel snippet into the head
+/// View component that injects the Triple Whale pixel snippet and tracked events into the head
 /// </summary>
 public class TripleWhalePixelViewComponent : NopViewComponent
 {
-    private readonly TripleWhaleSettings _tripleWhaleSettings;
+    private readonly TripleWhalePixelService _tripleWhalePixelService;
 
-    public TripleWhalePixelViewComponent(TripleWhaleSettings tripleWhaleSettings)
+    public TripleWhalePixelViewComponent(TripleWhalePixelService tripleWhalePixelService)
     {
-        _tripleWhaleSettings = tripleWhaleSettings;
+        _tripleWhalePixelService = tripleWhalePixelService;
     }
 
-    public IViewComponentResult Invoke(string widgetZone, object additionalData)
+    public async Task<IViewComponentResult> InvokeAsync(string widgetZone, object additionalData)
     {
-        var snippet = string.Empty;
+        var script = await _tripleWhalePixelService.PrepareScriptAsync();
 
-        if (_tripleWhaleSettings.EnablePixel && !string.IsNullOrWhiteSpace(_tripleWhaleSettings.PixelSnippet))
-            snippet = _tripleWhaleSettings.PixelSnippet;
-
-        return View("~/Plugins/Widgets.TripleWhale/Views/PublicInfo.cshtml", snippet);
+        return View("~/Plugins/Widgets.TripleWhale/Views/PublicInfo.cshtml", script);
     }
 }

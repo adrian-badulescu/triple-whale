@@ -14,6 +14,7 @@ public class NopStartup : INopStartup
     public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<TripleWhaleEventBuilder>();
+        services.AddScoped<TripleWhalePixelService>();
         services.AddScoped<TripleWhaleApiClient>();
         services.AddScoped<TripleWhaleLogService>();
         services.AddScoped<TripleWhaleSyncService>();

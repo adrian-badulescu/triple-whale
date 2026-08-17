@@ -99,4 +99,9 @@ public static class TripleWhaleDefaults
     /// Gets the background sync interval in seconds (5 minutes)
     /// </summary>
     public static int BackgroundSyncIntervalSeconds => 300;
+
+    /// <summary>
+    /// Gets the session key used to store pending Triple Whale pixel events
+    /// </summary>
+    public static string TrackedEventsSessionValue => "TripleWhaleTrackedEvents";
 }

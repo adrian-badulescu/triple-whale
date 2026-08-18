@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Nop.Core;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Http.Extensions;
+using Nop.Plugin.Widgets.TripleWhale.Domain;
 using Nop.Services.Catalog;
 
 namespace Nop.Plugin.Widgets.TripleWhale.Services;
@@ -19,16 +20,19 @@ public class TripleWhalePixelService
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IProductService _productService;
     private readonly IStoreContext _storeContext;
+    private readonly TripleWhaleLogService _logService;
 
     public TripleWhalePixelService(TripleWhaleSettings settings,
         IHttpContextAccessor httpContextAccessor,
         IProductService productService,
-        IStoreContext storeContext)
+        IStoreContext storeContext,
+        TripleWhaleLogService logService)
     {
         _settings = settings;
         _httpContextAccessor = httpContextAccessor;
         _productService = productService;
         _storeContext = storeContext;
+        _logService = logService;
     }
 
     /// <summary>
@@ -67,7 +71,7 @@ public class TripleWhalePixelService
         if (!string.IsNullOrWhiteSpace(product?.Sku))
             properties["v"] = product.Sku;
 
-        await QueueScriptAsync($"TriplePixel('AddToCart', {JsonSerializer.Serialize(properties)});");
+        await QueueEventAsync("AddToCart", properties);
     }
 
     /// <summary>
@@ -84,7 +88,56 @@ public class TripleWhalePixelService
         if (!string.IsNullOrWhiteSpace(phone))
             properties["phone"] = phone;
 
-        await QueueScriptAsync($"TriplePixel('Contact', {JsonSerializer.Serialize(properties)});");
+        await QueueEventAsync("Contact", properties);
+    }
+
+    /// <summary>
+    /// Queues a Search event with the searched term
+    /// </summary>
+    public async Task SendSearchEventAsync(string searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            return;
+
+        await QueueEventAsync("Search", new { searchString = searchTerm });
+    }
+
+    /// <summary>
+    /// Queues an InitiateCheckout event
+    /// </summary>
+    public async Task SendInitiateCheckoutEventAsync()
+    {
+        await QueueEventAsync("InitiateCheckout", new { });
+    }
+
+    /// <summary>
+    /// Queues a Purchase event with the order summary
+    /// </summary>
+    public async Task SendPurchaseEventAsync(object purchaseData)
+    {
+        await QueueEventAsync("Purchase", purchaseData ?? new { });
+    }
+
+    /// <summary>
+    /// Queues a Lead event (newsletter subscription)
+    /// </summary>
+    public async Task SendLeadEventAsync(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return;
+
+        await QueueEventAsync("Lead", new { email });
+    }
+
+    /// <summary>
+    /// Queues a SignUp event (account registration)
+    /// </summary>
+    public async Task SendSignUpEventAsync(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return;
+
+        await QueueEventAsync("SignUp", new { email });
     }
 
     /// <summary>
@@ -95,24 +148,39 @@ public class TripleWhalePixelService
         if (string.IsNullOrWhiteSpace(eventName))
             return;
 
-        await QueueScriptAsync($"TriplePixel('custom', '{EscapeJs(eventName)}', {JsonSerializer.Serialize(properties ?? new { })});");
+        await QueueEventAsync("custom", properties ?? new { }, eventName);
     }
 
-    private async Task QueueScriptAsync(string script)
+    /// <summary>
+    /// Queues a pixel event: stores it in the session for the next page and logs it to the database
+    /// </summary>
+    private async Task QueueEventAsync(string eventName, object data, string customEventName = null)
     {
         if (!_settings.EnablePixel)
             return;
 
+        var dataJson = JsonSerializer.Serialize(data ?? new { });
+
+        var call = customEventName is null
+            ? $"TriplePixel('{eventName}', {dataJson});"
+            : $"TriplePixel('custom', '{EscapeJs(customEventName)}', {dataJson});";
+
+        var logName = customEventName is null ? eventName : $"custom/{customEventName}";
+
+        // queue for rendering on the next page (with a console.log for easy verification in the browser)
         var context = _httpContextAccessor.HttpContext;
-        if (context?.Session is null)
-            return;
+        if (context?.Session is not null)
+        {
+            var scripts = await context.Session.GetAsync<IList<string>>(TripleWhaleDefaults.TrackedEventsSessionValue)
+                          ?? new List<string>();
 
-        var scripts = await context.Session.GetAsync<IList<string>>(TripleWhaleDefaults.TrackedEventsSessionValue)
-                      ?? new List<string>();
+            scripts.Add($"console.log('[Triple Whale] {logName}', {dataJson});{Environment.NewLine}{call}");
 
-        scripts.Add(script);
+            await context.Session.SetAsync(TripleWhaleDefaults.TrackedEventsSessionValue, scripts);
+        }
 
-        await context.Session.SetAsync(TripleWhaleDefaults.TrackedEventsSessionValue, scripts);
+        // persist to the database (visible via the admin "Download logs" button)
+        await _logService.LogAsync(TripleWhaleLogType.Pixel, logName, dataJson);
     }
 
     private async Task<string> PrepareTrackedEventsScriptAsync()

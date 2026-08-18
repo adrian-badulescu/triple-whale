@@ -2,9 +2,11 @@ using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Messages;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Events;
+using Nop.Core.Http;
 using Nop.Plugin.Widgets.TripleWhale.Domain;
 using Nop.Services.Customers;
 using Nop.Services.Events;
+using Nop.Web.Framework.Events;
 
 namespace Nop.Plugin.Widgets.TripleWhale.Services;
 
@@ -18,7 +20,9 @@ public class TripleWhaleEventConsumer :
     IConsumer<CustomerRegisteredEvent>,
     IConsumer<EntityUpdatedEvent<Customer>>,
     IConsumer<EntityInsertedEvent<ShoppingCartItem>>,
-    IConsumer<EmailSubscribedEvent>
+    IConsumer<EmailSubscribedEvent>,
+    IConsumer<ProductSearchEvent>,
+    IConsumer<PageRenderingEvent>
 {
     private readonly TripleWhaleSettings _settings;
     private readonly TripleWhaleEventBuilder _eventBuilder;
@@ -50,6 +54,7 @@ public class TripleWhaleEventConsumer :
 
         await SyncOrderAsync(order, "order.placed");
         await SendOrderEventAsync(order, "Purchase");
+        await SendPurchasePixelEventAsync(order);
     }
 
     /// <summary>
@@ -85,7 +90,10 @@ public class TripleWhaleEventConsumer :
             return;
 
         if (_settings.EnablePixel)
+        {
             await _pixelService.SendContactEventAsync(customer.Email);
+            await _pixelService.SendSignUpEventAsync(customer.Email);
+        }
 
         if (!_settings.EnableCustomerSync)
             return;
@@ -135,6 +143,49 @@ public class TripleWhaleEventConsumer :
             return;
 
         await _pixelService.SendContactEventAsync(subscription.Email);
+        await _pixelService.SendLeadEventAsync(subscription.Email);
+    }
+
+    /// <summary>
+    /// Handle the product search event
+    /// </summary>
+    public async Task HandleEventAsync(ProductSearchEvent eventMessage)
+    {
+        if (string.IsNullOrWhiteSpace(eventMessage?.SearchTerm))
+            return;
+
+        if (!_settings.EnablePixel)
+            return;
+
+        await _pixelService.SendSearchEventAsync(eventMessage.SearchTerm);
+    }
+
+    /// <summary>
+    /// Handle the page rendering event (fires InitiateCheckout on the checkout page)
+    /// </summary>
+    public async Task HandleEventAsync(PageRenderingEvent eventMessage)
+    {
+        var routeName = eventMessage?.GetRouteName() ?? string.Empty;
+
+        if (routeName != NopRouteNames.Standard.CHECKOUT && routeName != NopRouteNames.Standard.CHECKOUT_ONE_PAGE)
+            return;
+
+        if (!_settings.EnablePixel)
+            return;
+
+        await _pixelService.SendInitiateCheckoutEventAsync();
+    }
+
+    /// <summary>
+    /// Sends a client-side Purchase pixel event with the order summary
+    /// </summary>
+    private async Task SendPurchasePixelEventAsync(Order order)
+    {
+        if (!_settings.EnablePixel)
+            return;
+
+        var purchaseData = await _eventBuilder.BuildPurchasePixelDataAsync(order);
+        await _pixelService.SendPurchaseEventAsync(purchaseData);
     }
 
     /// <summary>

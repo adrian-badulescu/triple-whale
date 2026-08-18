@@ -18,5 +18,10 @@ public enum TripleWhaleLogType
     /// <summary>
     /// Error
     /// </summary>
-    Error = 3
+    Error = 3,
+
+    /// <summary>
+    /// Pixel event (client-side tracking event)
+    /// </summary>
+    Pixel = 4
 }

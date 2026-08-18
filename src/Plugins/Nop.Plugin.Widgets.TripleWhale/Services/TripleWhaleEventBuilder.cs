@@ -1,3 +1,4 @@
+using Nop.Core;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Common;
 using Nop.Core.Domain.Customers;
@@ -17,6 +18,7 @@ namespace Nop.Plugin.Widgets.TripleWhale.Services;
 public class TripleWhaleEventBuilder
 {
     private readonly TripleWhaleSettings _settings;
+    private readonly IStoreContext _storeContext;
     private readonly IOrderService _orderService;
     private readonly IProductService _productService;
     private readonly ICustomerService _customerService;
@@ -25,6 +27,7 @@ public class TripleWhaleEventBuilder
     private readonly IStateProvinceService _stateProvinceService;
 
     public TripleWhaleEventBuilder(TripleWhaleSettings settings,
+        IStoreContext storeContext,
         IOrderService orderService,
         IProductService productService,
         ICustomerService customerService,
@@ -33,6 +36,7 @@ public class TripleWhaleEventBuilder
         IStateProvinceService stateProvinceService)
     {
         _settings = settings;
+        _storeContext = storeContext;
         _orderService = orderService;
         _productService = productService;
         _customerService = customerService;
@@ -46,6 +50,7 @@ public class TripleWhaleEventBuilder
     /// </summary>
     public async Task<OrderRecordDto> BuildOrderAsync(Order order)
     {
+        var shop = await GetShopAsync();
         var orderItems = await _orderService.GetOrderItemsAsync(order.Id);
         var customer = await _customerService.GetCustomerByIdAsync(order.CustomerId);
 
@@ -70,11 +75,11 @@ public class TripleWhaleEventBuilder
 
         return new OrderRecordDto
         {
-            Shop = _settings.ShopUrl,
+            Shop = shop,
             OrderId = order.Id.ToString(),
             OrderRevenue = order.OrderTotal,
             Platform = "nopcommerce",
-            PlatformAccountId = _settings.ShopUrl,
+            PlatformAccountId = shop,
             CreatedAt = FormatDate(order.CreatedOnUtc),
             Currency = order.CustomerCurrencyCode,
             Customer = customer is null ? null : new OrderCustomerDto
@@ -103,16 +108,17 @@ public class TripleWhaleEventBuilder
     /// </summary>
     public async Task<CustomerRecordDto> BuildCustomerAsync(Customer customer)
     {
+        var shop = await GetShopAsync();
         var address = customer.BillingAddressId.HasValue
             ? await _addressService.GetAddressByIdAsync(customer.BillingAddressId.Value)
             : null;
 
         return new CustomerRecordDto
         {
-            Shop = _settings.ShopUrl,
+            Shop = shop,
             CustomerId = customer.Id.ToString(),
             Platform = "nopcommerce",
-            PlatformAccountId = _settings.ShopUrl,
+            PlatformAccountId = shop,
             EmailAddress = customer.Email,
             FirstName = customer.FirstName,
             LastName = customer.LastName,
@@ -131,13 +137,15 @@ public class TripleWhaleEventBuilder
     /// </summary>
     public async Task<ProductRecordDto> BuildProductAsync(Product product)
     {
+        var shop = await GetShopAsync();
+
         return new ProductRecordDto
         {
-            Shop = _settings.ShopUrl,
+            Shop = shop,
             ProductId = product.Id.ToString(),
             ProductTitle = product.Name,
             Platform = "nopcommerce",
-            PlatformAccountId = _settings.ShopUrl,
+            PlatformAccountId = shop,
             Variants = new List<ProductVariantDto>
             {
                 new ProductVariantDto
@@ -155,12 +163,14 @@ public class TripleWhaleEventBuilder
     /// <summary>
     /// Builds an offline / server-side event DTO
     /// </summary>
-    public OfflineEventDto BuildOfflineEvent(string type, string eventName, string email, string phone,
+    public async Task<OfflineEventDto> BuildOfflineEventAsync(string type, string eventName, string email, string phone,
         string pixelClientId, string source, string campaign, string ad, string adset)
     {
+        var shop = await GetShopAsync();
+
         return new OfflineEventDto
         {
-            Shop = _settings.ShopUrl,
+            Shop = shop,
             Type = type,
             EventName = eventName,
             ProfileIdentifiers = new ProfileIdentifiersDto
@@ -202,6 +212,18 @@ public class TripleWhaleEventBuilder
             CountryCode = country?.TwoLetterIsoCode,
             ProvinceCode = stateProvince?.Abbreviation
         };
+    }
+
+    /// <summary>
+    /// Gets the Triple Whale shop domain: the configured ShopUrl or the current store host
+    /// </summary>
+    private async Task<string> GetShopAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(_settings.ShopUrl))
+            return _settings.ShopUrl;
+
+        var store = await _storeContext.GetCurrentStoreAsync();
+        return TripleWhaleStoreHelper.GetHost(store?.Url);
     }
 
     /// <summary>

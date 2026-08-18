@@ -1,6 +1,8 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
+using Nop.Core;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Http.Extensions;
 using Nop.Services.Catalog;
@@ -16,14 +18,17 @@ public class TripleWhalePixelService
     private readonly TripleWhaleSettings _settings;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IProductService _productService;
+    private readonly IStoreContext _storeContext;
 
     public TripleWhalePixelService(TripleWhaleSettings settings,
         IHttpContextAccessor httpContextAccessor,
-        IProductService productService)
+        IProductService productService,
+        IStoreContext storeContext)
     {
         _settings = settings;
         _httpContextAccessor = httpContextAccessor;
         _productService = productService;
+        _storeContext = storeContext;
     }
 
     /// <summary>
@@ -37,6 +42,8 @@ public class TripleWhalePixelService
         var snippet = _settings.PixelSnippet;
         if (string.IsNullOrWhiteSpace(snippet))
             return string.Empty;
+
+        snippet = await InjectStoreDomainAsync(snippet);
 
         return snippet + await PrepareTrackedEventsScriptAsync();
     }
@@ -130,6 +137,33 @@ public class TripleWhalePixelService
         sb.AppendLine("</script>");
 
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Rewrites the snippet so its TripleName and first?host match the store domain
+    /// </summary>
+    private async Task<string> InjectStoreDomainAsync(string snippet)
+    {
+        var domain = await GetShopDomainAsync();
+        if (string.IsNullOrWhiteSpace(domain))
+            return snippet;
+
+        snippet = Regex.Replace(snippet, @"TripleName:\s*""[^""]*""", $"TripleName:\"{domain}\"");
+        snippet = Regex.Replace(snippet, @"first\?host=[^&""']+", $"first?host={domain}");
+
+        return snippet;
+    }
+
+    /// <summary>
+    /// Gets the Triple Whale shop domain: the configured ShopUrl or the current store host
+    /// </summary>
+    private async Task<string> GetShopDomainAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(_settings.ShopUrl))
+            return _settings.ShopUrl;
+
+        var store = await _storeContext.GetCurrentStoreAsync();
+        return TripleWhaleStoreHelper.GetHost(store?.Url);
     }
 
     private static string EscapeJs(string value)

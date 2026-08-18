@@ -74,7 +74,6 @@ public class TripleWhalePlugin : BasePlugin, IWidgetPlugin
     {
         await _settingService.SaveSettingAsync(new TripleWhaleSettings
         {
-            ShopUrl = "demo.universalrestaurant.systems",
             EnablePixel = true,
             EnableServerSideEvents = true,
             EnableOrderSync = true,
@@ -93,7 +92,7 @@ public class TripleWhalePlugin : BasePlugin, IWidgetPlugin
             ["Plugins.Widgets.TripleWhale.Fields.ApiKey"] = "API key",
             ["Plugins.Widgets.TripleWhale.Fields.ApiKey.Hint"] = "Your Triple Whale API key.",
             ["Plugins.Widgets.TripleWhale.Fields.ShopUrl"] = "Shop URL",
-            ["Plugins.Widgets.TripleWhale.Fields.ShopUrl.Hint"] = "Must match the Shop URL in Triple Whale (Settings → Store) and the TripleName in your pixel snippet.",
+            ["Plugins.Widgets.TripleWhale.Fields.ShopUrl.Hint"] = "Leave empty to auto-detect from the store URL. Must match the Shop URL in Triple Whale (Settings → Store) and the TripleName in your pixel snippet.",
             ["Plugins.Widgets.TripleWhale.Fields.PixelSnippet"] = "Pixel snippet",
             ["Plugins.Widgets.TripleWhale.Fields.PixelSnippet.Hint"] = "Paste the full base tracking snippet from the Triple Whale dashboard (Headless Installation).",
             ["Plugins.Widgets.TripleWhale.Fields.EnablePixel"] = "Enable pixel",

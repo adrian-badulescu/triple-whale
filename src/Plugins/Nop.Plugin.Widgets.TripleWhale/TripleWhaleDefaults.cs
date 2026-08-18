@@ -104,4 +104,9 @@ public static class TripleWhaleDefaults
     /// Gets the session key used to store pending Triple Whale pixel events
     /// </summary>
     public static string TrackedEventsSessionValue => "TripleWhaleTrackedEvents";
+
+    /// <summary>
+    /// Gets the session key used to store the checkout event id (for pixel/S2S Purchase dedup)
+    /// </summary>
+    public static string CheckoutEventIdSessionValue => "TripleWhaleCheckoutEventId";
 }

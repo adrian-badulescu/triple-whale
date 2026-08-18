@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Nop.Plugin.Widgets.TripleWhale.Services;
 using Nop.Web.Framework.Components;
+using Nop.Web.Framework.Infrastructure;
 
 namespace Nop.Plugin.Widgets.TripleWhale.Components;
 
@@ -18,7 +19,9 @@ public class TripleWhalePixelViewComponent : NopViewComponent
 
     public async Task<IViewComponentResult> InvokeAsync(string widgetZone, object additionalData)
     {
-        var script = await _tripleWhalePixelService.PrepareScriptAsync();
+        var script = widgetZone == PublicWidgetZones.OpcContentBefore
+            ? await _tripleWhalePixelService.PrepareCheckoutScriptAsync()
+            : await _tripleWhalePixelService.PrepareScriptAsync();
 
         return View("~/Plugins/Widgets.TripleWhale/Views/PublicInfo.cshtml", script);
     }

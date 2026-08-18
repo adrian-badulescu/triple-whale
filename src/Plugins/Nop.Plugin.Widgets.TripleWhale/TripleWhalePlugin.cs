@@ -42,7 +42,8 @@ public class TripleWhalePlugin : BasePlugin, IWidgetPlugin
     {
         return Task.FromResult<IList<string>>(new List<string>
         {
-            PublicWidgetZones.HeadHtmlTag
+            PublicWidgetZones.HeadHtmlTag,
+            PublicWidgetZones.OpcContentBefore
         });
     }
 

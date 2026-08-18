@@ -164,7 +164,7 @@ public class TripleWhaleEventBuilder
     /// Builds an offline / server-side event DTO
     /// </summary>
     public async Task<OfflineEventDto> BuildOfflineEventAsync(string type, string eventName, string email, string phone,
-        string pixelClientId, string source, string campaign, string ad, string adset)
+        string pixelClientId, string source, string campaign, string ad, string adset, string eventId = null)
     {
         var shop = await GetShopAsync();
 
@@ -179,12 +179,45 @@ public class TripleWhaleEventBuilder
                 Phone = phone,
                 PixelClientId = pixelClientId
             },
-            EventId = Guid.NewGuid().ToString("N"),
+            EventId = string.IsNullOrWhiteSpace(eventId) ? Guid.NewGuid().ToString("N") : eventId,
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             Source = source,
             Campaign = campaign,
             Ad = ad,
             Adset = adset
+        };
+    }
+
+    /// <summary>
+    /// Builds the client-side Purchase pixel event data from a nopCommerce order
+    /// </summary>
+    public async Task<Dictionary<string, object>> BuildPurchasePixelDataAsync(Order order, string eventId = null)
+    {
+        var orderItems = await _orderService.GetOrderItemsAsync(order.Id);
+
+        var products = new List<object>();
+        foreach (var item in orderItems)
+        {
+            var product = await _productService.GetProductByIdAsync(item.ProductId);
+            products.Add(new Dictionary<string, object>
+            {
+                ["id"] = item.ProductId.ToString(),
+                ["name"] = product?.Name,
+                ["sku"] = product?.Sku,
+                ["price"] = item.UnitPriceInclTax,
+                ["quantity"] = item.Quantity
+            });
+        }
+
+        return new Dictionary<string, object>
+        {
+            ["event_id"] = eventId,
+            ["orderId"] = order.Id.ToString(),
+            ["revenue"] = order.OrderTotal,
+            ["currency"] = order.CustomerCurrencyCode,
+            ["products"] = products,
+            ["taxes"] = order.OrderTax,
+            ["shipping"] = order.OrderShippingInclTax
         };
     }
 

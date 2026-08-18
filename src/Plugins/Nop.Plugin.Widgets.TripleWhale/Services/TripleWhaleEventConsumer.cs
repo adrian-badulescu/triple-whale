@@ -57,7 +57,12 @@ public class TripleWhaleEventConsumer :
             return;
 
         await SyncOrderAsync(order, "order.placed");
-        await SendOrderEventAsync(order, "Purchase");
+
+        var eventId = await _pixelService.GetCheckoutEventIdAsync();
+        _pixelService.ClearCheckoutEventId();
+
+        await SendOrderEventAsync(order, "Purchase", eventId);
+        await SendPurchasePixelEventAsync(order, eventId);
     }
 
     /// <summary>
@@ -205,10 +210,25 @@ public class TripleWhaleEventConsumer :
         if (routeName != NopRouteNames.Standard.CHECKOUT && routeName != NopRouteNames.Standard.CHECKOUT_ONE_PAGE)
             return;
 
+        if (!_settings.EnablePixel && !_settings.EnableServerSideEvents)
+            return;
+
+        await _pixelService.EnsureCheckoutEventIdAsync();
+
+        if (_settings.EnablePixel)
+            await _pixelService.SendInitiateCheckoutEventAsync();
+    }
+
+    /// <summary>
+    /// Sends a client-side Purchase pixel event with the order summary
+    /// </summary>
+    private async Task SendPurchasePixelEventAsync(Order order, string eventId)
+    {
         if (!_settings.EnablePixel)
             return;
 
-        await _pixelService.SendInitiateCheckoutEventAsync();
+        var purchaseData = await _eventBuilder.BuildPurchasePixelDataAsync(order, eventId);
+        await _pixelService.SendPurchaseEventAsync(purchaseData);
     }
 
     /// <summary>
@@ -226,14 +246,14 @@ public class TripleWhaleEventConsumer :
     /// <summary>
     /// Enqueues a server-side conversion event when server-side events are enabled
     /// </summary>
-    private async Task SendOrderEventAsync(Order order, string eventName)
+    private async Task SendOrderEventAsync(Order order, string eventName, string eventId = null)
     {
         if (!_settings.EnableServerSideEvents)
             return;
 
         var customer = await _customerService.GetCustomerByIdAsync(order.CustomerId);
         var offlineEvent = await _eventBuilder.BuildOfflineEventAsync(
-            "order", eventName, customer?.Email, null, null, null, null, null, null);
+            "order", eventName, customer?.Email, null, null, null, null, null, null, eventId);
 
         await _syncService.EnqueueAsync(TripleWhaleEntityType.Event, order.Id.ToString(), eventName, offlineEvent);
     }

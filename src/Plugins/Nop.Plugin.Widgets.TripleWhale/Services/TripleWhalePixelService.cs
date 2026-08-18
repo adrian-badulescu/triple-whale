@@ -53,6 +53,67 @@ public class TripleWhalePixelService
     }
 
     /// <summary>
+    /// Prepares the checkout-page script that tracks the intermediate OPC steps client-side
+    /// </summary>
+    public async Task<string> PrepareCheckoutScriptAsync()
+    {
+        if (!_settings.EnablePixel)
+            return string.Empty;
+
+        var endpoint = "/Plugins/TripleWhale/PixelEvent";
+
+        return $@"<script>
+(function () {{
+    window.TripleWhaleTrack = function (eventName, data) {{
+        data = data || {{}};
+
+        if (typeof TriplePixel === 'function') {{
+            TriplePixel(eventName, data);
+        }}
+
+        console.log('[Triple Whale] ' + eventName, data);
+
+        if (window.jQuery) {{
+            window.jQuery.ajax({{
+                url: '{endpoint}',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({{ eventName: eventName, data: data }})
+            }});
+        }}
+    }};
+
+    var hookCheckout = function () {{
+        if (typeof Checkout === 'undefined' || typeof Checkout.setStepResponse !== 'function') {{
+            setTimeout(hookCheckout, 250);
+            return;
+        }}
+
+        var original = Checkout.setStepResponse;
+        var fired = {{}};
+
+        Checkout.setStepResponse = function (response) {{
+            var result = original.apply(this, arguments);
+            var section = response && response.goto_section;
+
+            if (section === 'shipping' || section === 'shipping_method') {{
+                if (!fired.address) {{ fired.address = true; window.TripleWhaleTrack('AddressSubmitted', {{ step: section }}); }}
+            }} else if (section === 'payment_method') {{
+                if (!fired.shipping) {{ fired.shipping = true; window.TripleWhaleTrack('ShippingSubmitted', {{ step: section }}); }}
+            }} else if (section === 'confirm_order') {{
+                if (!fired.paymentInfo) {{ fired.paymentInfo = true; window.TripleWhaleTrack('AddPaymentInfo', {{ step: section }}); }}
+            }}
+
+            return result;
+        }};
+    }};
+
+    hookCheckout();
+}})();
+</script>";
+    }
+
+    /// <summary>
     /// Queues an AddToCart event for the given shopping cart item
     /// </summary>
     public async Task SendAddToCartEventAsync(ShoppingCartItem item)
@@ -108,6 +169,14 @@ public class TripleWhalePixelService
     public async Task SendInitiateCheckoutEventAsync()
     {
         await QueueEventAsync("InitiateCheckout", new { });
+    }
+
+    /// <summary>
+    /// Queues a Purchase event with the order summary
+    /// </summary>
+    public async Task SendPurchaseEventAsync(object purchaseData)
+    {
+        await QueueEventAsync("Purchase", purchaseData ?? new { });
     }
 
     /// <summary>
@@ -273,6 +342,45 @@ public class TripleWhalePixelService
 
         var store = await _storeContext.GetCurrentStoreAsync();
         return TripleWhaleStoreHelper.GetHost(store?.Url);
+    }
+
+    /// <summary>
+    /// Generates (if needed) and returns the checkout event id used to dedup pixel/S2S Purchase events
+    /// </summary>
+    public async Task<string> EnsureCheckoutEventIdAsync()
+    {
+        var eventId = await GetCheckoutEventIdAsync();
+        if (!string.IsNullOrWhiteSpace(eventId))
+            return eventId;
+
+        var context = _httpContextAccessor.HttpContext;
+        if (context?.Session is null)
+            return null;
+
+        eventId = Guid.NewGuid().ToString("N");
+        await context.Session.SetAsync(TripleWhaleDefaults.CheckoutEventIdSessionValue, eventId);
+
+        return eventId;
+    }
+
+    /// <summary>
+    /// Gets the checkout event id stored in the session (if any)
+    /// </summary>
+    public async Task<string> GetCheckoutEventIdAsync()
+    {
+        var context = _httpContextAccessor.HttpContext;
+        if (context?.Session is null)
+            return null;
+
+        return await context.Session.GetAsync<string>(TripleWhaleDefaults.CheckoutEventIdSessionValue);
+    }
+
+    /// <summary>
+    /// Removes the checkout event id from the session (after the order is placed)
+    /// </summary>
+    public void ClearCheckoutEventId()
+    {
+        _httpContextAccessor.HttpContext?.Session?.Remove(TripleWhaleDefaults.CheckoutEventIdSessionValue);
     }
 
     private static string EscapeJs(string value)

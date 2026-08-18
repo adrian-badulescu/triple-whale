@@ -7,6 +7,8 @@ using Nop.Plugin.Widgets.TripleWhale.Domain;
 using Nop.Services.Customers;
 using Nop.Services.Events;
 using Nop.Web.Framework.Events;
+using Nop.Web.Framework.Models;
+using Nop.Web.Models.Catalog;
 
 namespace Nop.Plugin.Widgets.TripleWhale.Services;
 
@@ -22,7 +24,9 @@ public class TripleWhaleEventConsumer :
     IConsumer<EntityInsertedEvent<ShoppingCartItem>>,
     IConsumer<EmailSubscribedEvent>,
     IConsumer<ProductSearchEvent>,
-    IConsumer<PageRenderingEvent>
+    IConsumer<PageRenderingEvent>,
+    IConsumer<EntityDeletedEvent<ShoppingCartItem>>,
+    IConsumer<ModelPreparedEvent<BaseNopModel>>
 {
     private readonly TripleWhaleSettings _settings;
     private readonly TripleWhaleEventBuilder _eventBuilder;
@@ -54,7 +58,6 @@ public class TripleWhaleEventConsumer :
 
         await SyncOrderAsync(order, "order.placed");
         await SendOrderEventAsync(order, "Purchase");
-        await SendPurchasePixelEventAsync(order);
     }
 
     /// <summary>
@@ -128,7 +131,39 @@ public class TripleWhaleEventConsumer :
         if (!_settings.EnablePixel)
             return;
 
-        await _pixelService.SendAddToCartEventAsync(item);
+        if (item.ShoppingCartType == ShoppingCartType.Wishlist)
+            await _pixelService.SendAddToWishlistEventAsync(item);
+        else
+            await _pixelService.SendAddToCartEventAsync(item);
+    }
+
+    /// <summary>
+    /// Handle the shopping cart item deleted event (remove from cart)
+    /// </summary>
+    public async Task HandleEventAsync(EntityDeletedEvent<ShoppingCartItem> eventMessage)
+    {
+        if (eventMessage?.Entity is not { } item)
+            return;
+
+        if (!_settings.EnablePixel)
+            return;
+
+        if (item.ShoppingCartType == ShoppingCartType.ShoppingCart)
+            await _pixelService.SendRemoveFromCartEventAsync(item);
+    }
+
+    /// <summary>
+    /// Handle the model prepared event (fires ViewContent on product details pages)
+    /// </summary>
+    public async Task HandleEventAsync(ModelPreparedEvent<BaseNopModel> eventMessage)
+    {
+        if (eventMessage?.Model is not ProductDetailsModel productDetailsModel)
+            return;
+
+        if (!_settings.EnablePixel)
+            return;
+
+        await _pixelService.SendViewContentEventAsync(productDetailsModel.Id, productDetailsModel.Name);
     }
 
     /// <summary>
@@ -174,18 +209,6 @@ public class TripleWhaleEventConsumer :
             return;
 
         await _pixelService.SendInitiateCheckoutEventAsync();
-    }
-
-    /// <summary>
-    /// Sends a client-side Purchase pixel event with the order summary
-    /// </summary>
-    private async Task SendPurchasePixelEventAsync(Order order)
-    {
-        if (!_settings.EnablePixel)
-            return;
-
-        var purchaseData = await _eventBuilder.BuildPurchasePixelDataAsync(order);
-        await _pixelService.SendPurchaseEventAsync(purchaseData);
     }
 
     /// <summary>

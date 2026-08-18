@@ -189,38 +189,6 @@ public class TripleWhaleEventBuilder
     }
 
     /// <summary>
-    /// Builds the client-side Purchase pixel event data from a nopCommerce order
-    /// </summary>
-    public async Task<Dictionary<string, object>> BuildPurchasePixelDataAsync(Order order)
-    {
-        var orderItems = await _orderService.GetOrderItemsAsync(order.Id);
-
-        var products = new List<object>();
-        foreach (var item in orderItems)
-        {
-            var product = await _productService.GetProductByIdAsync(item.ProductId);
-            products.Add(new Dictionary<string, object>
-            {
-                ["id"] = item.ProductId.ToString(),
-                ["name"] = product?.Name,
-                ["sku"] = product?.Sku,
-                ["price"] = item.UnitPriceInclTax,
-                ["quantity"] = item.Quantity
-            });
-        }
-
-        return new Dictionary<string, object>
-        {
-            ["orderId"] = order.Id.ToString(),
-            ["revenue"] = order.OrderTotal,
-            ["currency"] = order.CustomerCurrencyCode,
-            ["products"] = products,
-            ["taxes"] = order.OrderTax,
-            ["shipping"] = order.OrderShippingInclTax
-        };
-    }
-
-    /// <summary>
     /// Builds a shipping/billing address DTO
     /// </summary>
     private async Task<OrderAddressDto> BuildAddressAsync(Address address)

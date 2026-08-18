@@ -111,11 +111,52 @@ public class TripleWhalePixelService
     }
 
     /// <summary>
-    /// Queues a Purchase event with the order summary
+    /// Queues a ViewContent event for a product details page
     /// </summary>
-    public async Task SendPurchaseEventAsync(object purchaseData)
+    public async Task SendViewContentEventAsync(int productId, string productName)
     {
-        await QueueEventAsync("Purchase", purchaseData ?? new { });
+        if (productId == 0)
+            return;
+
+        await QueueEventAsync("ViewContent", new
+        {
+            content_id = productId.ToString(),
+            content_name = productName,
+            content_type = "product"
+        });
+    }
+
+    /// <summary>
+    /// Queues an AddToWishlist event for the given shopping cart item
+    /// </summary>
+    public async Task SendAddToWishlistEventAsync(ShoppingCartItem item)
+    {
+        if (item is null || item.ProductId == 0)
+            return;
+
+        var product = await _productService.GetProductByIdAsync(item.ProductId);
+
+        var properties = new Dictionary<string, object>
+        {
+            ["item"] = item.ProductId.ToString(),
+            ["q"] = item.Quantity
+        };
+
+        if (!string.IsNullOrWhiteSpace(product?.Sku))
+            properties["v"] = product.Sku;
+
+        await QueueEventAsync("AddToWishlist", properties);
+    }
+
+    /// <summary>
+    /// Queues a RemoveFromCart event for the given shopping cart item
+    /// </summary>
+    public async Task SendRemoveFromCartEventAsync(ShoppingCartItem item)
+    {
+        if (item is null || item.ProductId == 0)
+            return;
+
+        await QueueEventAsync("RemoveFromCart", new { item = item.ProductId.ToString(), q = item.Quantity });
     }
 
     /// <summary>

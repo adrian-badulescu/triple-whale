@@ -14,7 +14,7 @@ public class ProductRecordDto
     [JsonPropertyName("platform_account_id")] public string PlatformAccountId { get; set; }
     [JsonPropertyName("variants")] public List<ProductVariantDto> Variants { get; set; }
     [JsonPropertyName("collections")] public List<string> Collections { get; set; }
-    [JsonPropertyName("tags")] public List<string> Tags { get; set; }
+    [JsonPropertyName("product_tags")] public List<string> Tags { get; set; }
 }
 
 public class ProductVariantDto

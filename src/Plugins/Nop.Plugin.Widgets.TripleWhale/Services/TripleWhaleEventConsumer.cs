@@ -253,7 +253,7 @@ public class TripleWhaleEventConsumer :
 
         var customer = await _customerService.GetCustomerByIdAsync(order.CustomerId);
         var offlineEvent = await _eventBuilder.BuildOfflineEventAsync(
-            "order", eventName, customer?.Email, null, null, null, null, null, null, eventId);
+            "custom", eventName, customer?.Email, null, customer?.Id.ToString(), null, null, null, null, eventId);
 
         await _syncService.EnqueueAsync(TripleWhaleEntityType.Event, order.Id.ToString(), eventName, offlineEvent);
     }

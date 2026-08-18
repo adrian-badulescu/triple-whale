@@ -23,5 +23,5 @@ public class ProfileIdentifiersDto
 {
     [JsonPropertyName("email")] public string Email { get; set; }
     [JsonPropertyName("phone")] public string Phone { get; set; }
-    [JsonPropertyName("pixelClientId")] public string PixelClientId { get; set; }
+    [JsonPropertyName("externalId")] public string ExternalId { get; set; }
 }

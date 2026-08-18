@@ -61,6 +61,7 @@ public class TripleWhaleEventBuilder
             lineItems.Add(new OrderLineItemDto
             {
                 Id = item.Id.ToString(),
+                Name = product?.Name,
                 Price = item.UnitPriceInclTax,
                 Quantity = item.Quantity,
                 ProductId = item.ProductId.ToString(),
@@ -164,7 +165,7 @@ public class TripleWhaleEventBuilder
     /// Builds an offline / server-side event DTO
     /// </summary>
     public async Task<OfflineEventDto> BuildOfflineEventAsync(string type, string eventName, string email, string phone,
-        string pixelClientId, string source, string campaign, string ad, string adset, string eventId = null)
+        string externalId, string source, string campaign, string ad, string adset, string eventId = null)
     {
         var shop = await GetShopAsync();
 
@@ -177,10 +178,10 @@ public class TripleWhaleEventBuilder
             {
                 Email = email,
                 Phone = phone,
-                PixelClientId = pixelClientId
+                ExternalId = externalId
             },
             EventId = string.IsNullOrWhiteSpace(eventId) ? Guid.NewGuid().ToString("N") : eventId,
-            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             Source = source,
             Campaign = campaign,
             Ad = ad,

@@ -15,9 +15,5 @@ public class ConfigurationValidator : BaseNopValidator<ConfigurationModel>
         RuleFor(model => model.ApiKey)
             .NotEmpty()
             .WithMessageAwait(localizationService.GetResourceAsync("Plugins.Widgets.TripleWhale.Fields.ApiKey.Required"));
-
-        RuleFor(model => model.ShopUrl)
-            .NotEmpty()
-            .WithMessageAwait(localizationService.GetResourceAsync("Plugins.Widgets.TripleWhale.Fields.ShopUrl.Required"));
     }
 }

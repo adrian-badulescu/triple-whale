@@ -289,8 +289,16 @@ public class TripleWhalePixelService
             await context.Session.SetAsync(TripleWhaleDefaults.TrackedEventsSessionValue, scripts);
         }
 
-        // persist to the database (visible via the admin "Download logs" button)
-        await _logService.LogAsync(TripleWhaleLogType.Pixel, logName, dataJson);
+        // persist to the database (visible via the admin "Download logs" button).
+        // Never let a logging failure break the page/request.
+        try
+        {
+            await _logService.LogAsync(TripleWhaleLogType.Pixel, logName, dataJson);
+        }
+        catch
+        {
+            // ignore; logging is best-effort
+        }
     }
 
     private async Task<string> PrepareTrackedEventsScriptAsync()

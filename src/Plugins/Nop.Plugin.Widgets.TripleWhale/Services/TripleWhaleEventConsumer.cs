@@ -162,13 +162,20 @@ public class TripleWhaleEventConsumer :
     /// </summary>
     public async Task HandleEventAsync(ModelPreparedEvent<BaseNopModel> eventMessage)
     {
-        if (eventMessage?.Model is not ProductDetailsModel productDetailsModel)
-            return;
+        try
+        {
+            if (eventMessage?.Model is not ProductDetailsModel productDetailsModel)
+                return;
 
-        if (!_settings.EnablePixel)
-            return;
+            if (!_settings.EnablePixel)
+                return;
 
-        await _pixelService.SendViewContentEventAsync(productDetailsModel.Id, productDetailsModel.Name);
+            await _pixelService.SendViewContentEventAsync(productDetailsModel.Id, productDetailsModel.Name);
+        }
+        catch
+        {
+            // never break the page render
+        }
     }
 
     /// <summary>
@@ -205,18 +212,25 @@ public class TripleWhaleEventConsumer :
     /// </summary>
     public async Task HandleEventAsync(PageRenderingEvent eventMessage)
     {
-        var routeName = eventMessage?.GetRouteName() ?? string.Empty;
+        try
+        {
+            var routeName = eventMessage?.GetRouteName() ?? string.Empty;
 
-        if (routeName != NopRouteNames.Standard.CHECKOUT && routeName != NopRouteNames.Standard.CHECKOUT_ONE_PAGE)
-            return;
+            if (routeName != NopRouteNames.Standard.CHECKOUT && routeName != NopRouteNames.Standard.CHECKOUT_ONE_PAGE)
+                return;
 
-        if (!_settings.EnablePixel && !_settings.EnableServerSideEvents)
-            return;
+            if (!_settings.EnablePixel && !_settings.EnableServerSideEvents)
+                return;
 
-        await _pixelService.EnsureCheckoutEventIdAsync();
+            await _pixelService.EnsureCheckoutEventIdAsync();
 
-        if (_settings.EnablePixel)
-            await _pixelService.SendInitiateCheckoutEventAsync();
+            if (_settings.EnablePixel)
+                await _pixelService.SendInitiateCheckoutEventAsync();
+        }
+        catch
+        {
+            // never break the page render
+        }
     }
 
     /// <summary>

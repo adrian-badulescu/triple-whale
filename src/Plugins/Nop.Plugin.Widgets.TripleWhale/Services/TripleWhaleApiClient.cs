@@ -74,6 +74,7 @@ public class TripleWhaleApiClient
                     request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var client = _httpClientFactory.CreateClient();
+                client.Timeout = TimeSpan.FromSeconds(15);
                 using var response = await client.SendAsync(request);
 
                 var body = await response.Content.ReadAsStringAsync();

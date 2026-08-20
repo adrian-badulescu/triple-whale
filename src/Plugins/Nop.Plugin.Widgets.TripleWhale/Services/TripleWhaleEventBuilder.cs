@@ -66,6 +66,7 @@ public class TripleWhaleEventBuilder
                 Quantity = item.Quantity,
                 ProductId = item.ProductId.ToString(),
                 ProductName = product?.Name,
+                VariantId = item.ProductId.ToString(),
                 Sku = product?.Sku
             });
         }
@@ -152,6 +153,7 @@ public class TripleWhaleEventBuilder
                 new ProductVariantDto
                 {
                     Id = product.Id.ToString(),
+                    VariantId = product.Id.ToString(),
                     Name = product.Name,
                     Sku = product.Sku,
                     VariantPrice = product.Price
@@ -254,10 +256,10 @@ public class TripleWhaleEventBuilder
     private async Task<string> GetShopAsync()
     {
         if (!string.IsNullOrWhiteSpace(_settings.ShopUrl))
-            return _settings.ShopUrl;
+            return TripleWhaleStoreHelper.NormalizeShop(_settings.ShopUrl);
 
         var store = await _storeContext.GetCurrentStoreAsync();
-        return TripleWhaleStoreHelper.GetHost(store?.Url);
+        return TripleWhaleStoreHelper.NormalizeShop(TripleWhaleStoreHelper.GetHost(store?.Url));
     }
 
     /// <summary>

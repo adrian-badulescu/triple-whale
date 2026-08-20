@@ -20,6 +20,7 @@ public class ProductRecordDto
 public class ProductVariantDto
 {
     [JsonPropertyName("id")] public string Id { get; set; }
+    [JsonPropertyName("variant_id")] public string VariantId { get; set; }
     [JsonPropertyName("name")] public string Name { get; set; }
     [JsonPropertyName("sku")] public string Sku { get; set; }
     [JsonPropertyName("variant_price")] public decimal VariantPrice { get; set; }

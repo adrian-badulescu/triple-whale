@@ -17,4 +17,21 @@ public static class TripleWhaleStoreHelper
             ? uri.Host
             : null;
     }
+
+    /// <summary>
+    /// Normalizes a shop value to the bare domain Triple Whale expects (no scheme, no trailing slash)
+    /// </summary>
+    public static string NormalizeShop(string shopUrl)
+    {
+        if (string.IsNullOrWhiteSpace(shopUrl))
+            return null;
+
+        var value = shopUrl.Trim();
+
+        // if a full URL was pasted (e.g. https://demo.example.com/), keep only the host
+        if (Uri.TryCreate(value, UriKind.Absolute, out var uri) && !string.IsNullOrWhiteSpace(uri.Host))
+            value = uri.Host;
+
+        return value.TrimEnd('/').Trim();
+    }
 }

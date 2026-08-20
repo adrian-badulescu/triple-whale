@@ -110,6 +110,10 @@ public class TripleWhaleEventBuilder
     /// </summary>
     public async Task<CustomerRecordDto> BuildCustomerAsync(Customer customer)
     {
+        // skip nopCommerce built-in bot customers (search engine / background task placeholders)
+        if (customer.Email is not null && customer.Email.StartsWith("builtin@", StringComparison.OrdinalIgnoreCase))
+            return null;
+
         var shop = await GetShopAsync();
         var address = customer.BillingAddressId.HasValue
             ? await _addressService.GetAddressByIdAsync(customer.BillingAddressId.Value)
@@ -154,6 +158,8 @@ public class TripleWhaleEventBuilder
                 {
                     Id = product.Id.ToString(),
                     VariantId = product.Id.ToString(),
+                    VariantName = product.Name,
+                    VariantTitle = product.Name,
                     Name = product.Name,
                     Sku = product.Sku,
                     VariantPrice = product.Price

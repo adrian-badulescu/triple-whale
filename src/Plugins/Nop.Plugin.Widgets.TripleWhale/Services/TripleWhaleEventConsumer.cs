@@ -107,6 +107,9 @@ public class TripleWhaleEventConsumer :
             return;
 
         var dto = await _eventBuilder.BuildCustomerAsync(customer);
+        if (dto is null)
+            return;
+
         await _syncService.EnqueueAsync(TripleWhaleEntityType.Customer, customer.Id.ToString(), "customer.registered", dto);
     }
 
@@ -122,6 +125,9 @@ public class TripleWhaleEventConsumer :
             return;
 
         var dto = await _eventBuilder.BuildCustomerAsync(customer);
+        if (dto is null)
+            return;
+
         await _syncService.EnqueueAsync(TripleWhaleEntityType.Customer, customer.Id.ToString(), "customer.updated", dto);
     }
 

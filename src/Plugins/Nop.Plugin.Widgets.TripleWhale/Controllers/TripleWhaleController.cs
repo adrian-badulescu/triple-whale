@@ -148,6 +148,9 @@ public class TripleWhaleController : BasePluginController
             foreach (var customer in customers)
             {
                 var dto = await _eventBuilder.BuildCustomerAsync(customer);
+                if (dto is null)
+                    continue;
+
                 await _syncService.EnqueueAsync(TripleWhaleEntityType.Customer, customer.Id.ToString(), "customer.sync", dto);
                 count++;
             }

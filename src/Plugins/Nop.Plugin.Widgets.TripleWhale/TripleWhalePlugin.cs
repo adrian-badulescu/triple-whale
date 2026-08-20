@@ -54,7 +54,7 @@ public class TripleWhalePlugin : BasePlugin, IWidgetPlugin
     {
         ArgumentNullException.ThrowIfNull(widgetZone);
 
-        if (widgetZone.Equals(PublicWidgetZones.HeadHtmlTag))
+        if (widgetZone.Equals(PublicWidgetZones.HeadHtmlTag) || widgetZone.Equals(PublicWidgetZones.OpcContentBefore))
             return typeof(TripleWhalePixelViewComponent);
 
         return null;

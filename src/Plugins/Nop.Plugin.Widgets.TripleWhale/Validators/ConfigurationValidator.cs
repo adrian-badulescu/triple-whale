@@ -15,5 +15,9 @@ public class ConfigurationValidator : BaseNopValidator<ConfigurationModel>
         RuleFor(model => model.ApiKey)
             .NotEmpty()
             .WithMessageAwait(localizationService.GetResourceAsync("Plugins.Widgets.TripleWhale.Fields.ApiKey.Required"));
+
+        RuleFor(model => model.NumberOfDaysToKeepLogs)
+            .GreaterThan(0)
+            .WithMessageAwait(localizationService.GetResourceAsync("Plugins.Widgets.TripleWhale.Fields.NumberOfDaysToKeepLogs.MustBeGreaterThanZero"));
     }
 }

@@ -105,6 +105,17 @@ public class TripleWhaleEventBuilder
                 ? null
                 : new List<string> { order.PaymentMethodSystemName },
             Status = order.OrderStatus.ToString(),
+            Refunds = order.RefundedAmount > 0
+                ? new List<OrderRefundDto>
+                {
+                    new OrderRefundDto
+                    {
+                        RefundId = order.Id + "-refund",
+                        RefundedAt = FormatDate(DateTime.UtcNow),
+                        TotalRefund = order.RefundedAmount
+                    }
+                }
+                : null,
             TaxesIncluded = true
         };
     }

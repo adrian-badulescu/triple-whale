@@ -113,6 +113,7 @@ public class TripleWhalePlugin : BasePlugin, IWidgetPlugin
             ["Plugins.Widgets.TripleWhale.TestConnection.Failed"] = "Connection to Triple Whale failed: {0}",
             ["Plugins.Widgets.TripleWhale.Fields.NumberOfDaysToKeepLogs"] = "Number of days to keep logs",
             ["Plugins.Widgets.TripleWhale.Fields.NumberOfDaysToKeepLogs.Hint"] = "Log entries older than this number of days will be deleted automatically.",
+            ["Plugins.Widgets.TripleWhale.Fields.NumberOfDaysToKeepLogs.MustBeGreaterThanZero"] = "Number of days must be greater than 0",
             ["Plugins.Widgets.TripleWhale.SyncAll.Success"] = "{0} item(s) were queued for sync to Triple Whale."
         });
 

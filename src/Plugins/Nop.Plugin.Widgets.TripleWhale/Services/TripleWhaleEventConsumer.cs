@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Messages;
 using Nop.Core.Domain.Orders;
@@ -21,6 +23,8 @@ public class TripleWhaleEventConsumer :
     IConsumer<OrderRefundedEvent>,
     IConsumer<CustomerRegisteredEvent>,
     IConsumer<EntityUpdatedEvent<Customer>>,
+    IConsumer<EntityInsertedEvent<Product>>,
+    IConsumer<EntityUpdatedEvent<Product>>,
     IConsumer<EntityInsertedEvent<ShoppingCartItem>>,
     IConsumer<EmailSubscribedEvent>,
     IConsumer<ProductSearchEvent>,
@@ -33,6 +37,8 @@ public class TripleWhaleEventConsumer :
     private readonly TripleWhaleSyncService _syncService;
     private readonly TripleWhalePixelService _pixelService;
     private readonly ICustomerService _customerService;
+
+    private static readonly ConcurrentDictionary<int, DateTime> _lastCustomerSync = new();
 
     public TripleWhaleEventConsumer(
         TripleWhaleSettings settings,
@@ -123,6 +129,13 @@ public class TripleWhaleEventConsumer :
 
         if (!_settings.EnableCustomerSync)
             return;
+
+        // throttle duplicate updates for the same customer within a short window
+        var now = DateTime.UtcNow;
+        if (_lastCustomerSync.TryGetValue(customer.Id, out var lastSync) && (now - lastSync).TotalSeconds < 60)
+            return;
+
+        _lastCustomerSync[customer.Id] = now;
 
         var dto = await _eventBuilder.BuildCustomerAsync(customer);
         if (dto is null)
@@ -276,5 +289,36 @@ public class TripleWhaleEventConsumer :
             "custom", eventName, customer?.Email, null, customer?.Id.ToString(), null, null, null, null, eventId);
 
         await _syncService.EnqueueAsync(TripleWhaleEntityType.Event, order.Id.ToString(), eventName, offlineEvent);
+    }
+
+    /// <summary>
+    /// Handle the product inserted event
+    /// </summary>
+    public async Task HandleEventAsync(EntityInsertedEvent<Product> eventMessage)
+    {
+        await SyncProductAsync(eventMessage?.Entity);
+    }
+
+    /// <summary>
+    /// Handle the product updated event
+    /// </summary>
+    public async Task HandleEventAsync(EntityUpdatedEvent<Product> eventMessage)
+    {
+        await SyncProductAsync(eventMessage?.Entity);
+    }
+
+    /// <summary>
+    /// Enqueues a product sync item when product sync is enabled
+    /// </summary>
+    private async Task SyncProductAsync(Product product)
+    {
+        if (product is null)
+            return;
+
+        if (!_settings.EnableProductSync)
+            return;
+
+        var dto = await _eventBuilder.BuildProductAsync(product);
+        await _syncService.EnqueueAsync(TripleWhaleEntityType.Product, product.Id.ToString(), "product.updated", dto);
     }
 }

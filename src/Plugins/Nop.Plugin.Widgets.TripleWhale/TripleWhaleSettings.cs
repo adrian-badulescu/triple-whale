@@ -8,7 +8,7 @@ namespace Nop.Plugin.Widgets.TripleWhale;
 public class TripleWhaleSettings : ISettings
 {
     /// <summary>
-    /// Gets or sets the Triple Whale API key (encrypted at rest)
+    /// Gets or sets the Triple Whale API key
     /// </summary>
     public string ApiKey { get; set; }
 

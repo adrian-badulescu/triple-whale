@@ -75,6 +75,10 @@ public class TripleWhaleEventBuilder
             ? await _addressService.GetAddressByIdAsync(order.ShippingAddressId.Value)
             : null;
 
+        var billingAddress = customer is not null && customer.BillingAddressId.HasValue
+            ? await _addressService.GetAddressByIdAsync(customer.BillingAddressId.Value)
+            : null;
+
         return new OrderRecordDto
         {
             Shop = shop,
@@ -88,8 +92,8 @@ public class TripleWhaleEventBuilder
             {
                 Id = customer.Id.ToString(),
                 Email = customer.Email,
-                FirstName = customer.FirstName,
-                LastName = customer.LastName
+                FirstName = !string.IsNullOrWhiteSpace(billingAddress?.FirstName) ? billingAddress.FirstName : customer.FirstName,
+                LastName = !string.IsNullOrWhiteSpace(billingAddress?.LastName) ? billingAddress.LastName : customer.LastName
             },
             Name = $"Order #{order.CustomOrderNumber}",
             LineItems = lineItems,
@@ -119,6 +123,10 @@ public class TripleWhaleEventBuilder
             ? await _addressService.GetAddressByIdAsync(customer.BillingAddressId.Value)
             : null;
 
+        var firstName = !string.IsNullOrWhiteSpace(address?.FirstName) ? address.FirstName : customer.FirstName;
+        var lastName = !string.IsNullOrWhiteSpace(address?.LastName) ? address.LastName : customer.LastName;
+        var displayName = (firstName + " " + lastName).Trim();
+
         return new CustomerRecordDto
         {
             Shop = shop,
@@ -126,9 +134,9 @@ public class TripleWhaleEventBuilder
             Platform = "nopcommerce",
             PlatformAccountId = shop,
             EmailAddress = customer.Email,
-            FirstName = customer.FirstName,
-            LastName = customer.LastName,
-            DisplayName = customer.FirstName + " " + customer.LastName,
+            FirstName = firstName,
+            LastName = lastName,
+            DisplayName = displayName,
             Address1 = address?.Address1,
             Address2 = address?.Address2,
             City = address?.City,

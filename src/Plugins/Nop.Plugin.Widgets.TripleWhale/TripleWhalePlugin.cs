@@ -79,7 +79,8 @@ public class TripleWhalePlugin : BasePlugin, IWidgetPlugin
             EnableServerSideEvents = true,
             EnableOrderSync = true,
             EnableCustomerSync = true,
-            EnableProductSync = true
+            EnableProductSync = true,
+            NumberOfDaysToKeepLogs = TripleWhaleDefaults.DefaultNumberOfDaysToKeepLogs
         });
 
         if (!_widgetSettings.ActiveWidgetSystemNames.Contains(TripleWhaleDefaults.SystemName))
@@ -110,6 +111,8 @@ public class TripleWhalePlugin : BasePlugin, IWidgetPlugin
             ["Plugins.Widgets.TripleWhale.Button.DownloadLogs"] = "Download logs",
             ["Plugins.Widgets.TripleWhale.TestConnection.Success"] = "Connection to Triple Whale was successful.",
             ["Plugins.Widgets.TripleWhale.TestConnection.Failed"] = "Connection to Triple Whale failed: {0}",
+            ["Plugins.Widgets.TripleWhale.Fields.NumberOfDaysToKeepLogs"] = "Number of days to keep logs",
+            ["Plugins.Widgets.TripleWhale.Fields.NumberOfDaysToKeepLogs.Hint"] = "Log entries older than this number of days will be deleted automatically.",
             ["Plugins.Widgets.TripleWhale.SyncAll.Success"] = "{0} item(s) were queued for sync to Triple Whale."
         });
 
@@ -119,6 +122,15 @@ public class TripleWhalePlugin : BasePlugin, IWidgetPlugin
             Type = TripleWhaleDefaults.BackgroundSyncTaskType,
             Name = TripleWhaleDefaults.BackgroundSyncTaskName,
             Seconds = TripleWhaleDefaults.BackgroundSyncIntervalSeconds,
+            Enabled = true
+        });
+
+        // schedule the log cleanup task
+        await _scheduleTaskService.InsertTaskAsync(new ScheduleTask
+        {
+            Type = TripleWhaleDefaults.DeleteLogsTaskType,
+            Name = TripleWhaleDefaults.DeleteLogsTaskName,
+            Seconds = TripleWhaleDefaults.DeleteLogsIntervalSeconds,
             Enabled = true
         });
 
@@ -142,6 +154,10 @@ public class TripleWhalePlugin : BasePlugin, IWidgetPlugin
         var syncTask = await _scheduleTaskService.GetTaskByTypeAsync(TripleWhaleDefaults.BackgroundSyncTaskType);
         if (syncTask is not null)
             await _scheduleTaskService.DeleteTaskAsync(syncTask);
+
+        var deleteLogsTask = await _scheduleTaskService.GetTaskByTypeAsync(TripleWhaleDefaults.DeleteLogsTaskType);
+        if (deleteLogsTask is not null)
+            await _scheduleTaskService.DeleteTaskAsync(deleteLogsTask);
 
         await base.UninstallAsync();
     }

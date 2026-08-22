@@ -46,4 +46,9 @@ public class TripleWhaleSettings : ISettings
     /// Gets or sets whether product sync is enabled
     /// </summary>
     public bool EnableProductSync { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of days to keep log records (older logs are deleted by a scheduled task)
+    /// </summary>
+    public int NumberOfDaysToKeepLogs { get; set; }
 }

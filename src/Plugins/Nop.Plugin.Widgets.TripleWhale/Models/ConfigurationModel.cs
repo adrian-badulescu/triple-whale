@@ -31,4 +31,7 @@ public record ConfigurationModel : BaseNopModel
 
     [NopResourceDisplayName("Plugins.Widgets.TripleWhale.Fields.EnableProductSync")]
     public bool EnableProductSync { get; set; }
+
+    [NopResourceDisplayName("Plugins.Widgets.TripleWhale.Fields.NumberOfDaysToKeepLogs")]
+    public int NumberOfDaysToKeepLogs { get; set; }
 }

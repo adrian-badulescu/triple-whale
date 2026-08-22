@@ -75,7 +75,8 @@ public class TripleWhaleController : BasePluginController
             EnableServerSideEvents = _settings.EnableServerSideEvents,
             EnableOrderSync = _settings.EnableOrderSync,
             EnableCustomerSync = _settings.EnableCustomerSync,
-            EnableProductSync = _settings.EnableProductSync
+            EnableProductSync = _settings.EnableProductSync,
+            NumberOfDaysToKeepLogs = _settings.NumberOfDaysToKeepLogs
         };
 
         return View("~/Plugins/Widgets.TripleWhale/Views/Configure.cshtml", model);
@@ -118,6 +119,7 @@ public class TripleWhaleController : BasePluginController
         _settings.EnableOrderSync = model.EnableOrderSync;
         _settings.EnableCustomerSync = model.EnableCustomerSync;
         _settings.EnableProductSync = model.EnableProductSync;
+        _settings.NumberOfDaysToKeepLogs = model.NumberOfDaysToKeepLogs;
 
         await _settingService.SaveSettingAsync(_settings);
         await _settingService.ClearCacheAsync();

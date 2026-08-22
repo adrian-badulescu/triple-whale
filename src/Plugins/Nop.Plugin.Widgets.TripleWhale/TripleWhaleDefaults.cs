@@ -101,6 +101,26 @@ public static class TripleWhaleDefaults
     public static int BackgroundSyncIntervalSeconds => 300;
 
     /// <summary>
+    /// Gets the default number of days to keep log records
+    /// </summary>
+    public static int DefaultNumberOfDaysToKeepLogs => 30;
+
+    /// <summary>
+    /// Gets the scheduled log cleanup task type
+    /// </summary>
+    public static string DeleteLogsTaskType => "Nop.Plugin.Widgets.TripleWhale.Services.DeleteTripleWhaleLogsTask";
+
+    /// <summary>
+    /// Gets the scheduled log cleanup task name
+    /// </summary>
+    public static string DeleteLogsTaskName => "Triple Whale logs auto-delete (Triple Whale plugin)";
+
+    /// <summary>
+    /// Gets the log cleanup interval in seconds (24 hours)
+    /// </summary>
+    public static int DeleteLogsIntervalSeconds => 86400;
+
+    /// <summary>
     /// Gets the session key used to store pending Triple Whale pixel events
     /// </summary>
     public static string TrackedEventsSessionValue => "TripleWhaleTrackedEvents";

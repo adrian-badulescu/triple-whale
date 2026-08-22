@@ -113,7 +113,8 @@ public class TripleWhaleEventBuilder
                     {
                         RefundId = order.Id + "-refund",
                         RefundedAt = FormatDate(DateTime.UtcNow),
-                        TotalRefund = order.RefundedAmount
+                        TotalRefund = order.RefundedAmount,
+                        LineItems = lineItems
                     }
                 }
                 : null,

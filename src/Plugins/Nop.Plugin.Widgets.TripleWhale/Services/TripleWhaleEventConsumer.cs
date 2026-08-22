@@ -21,6 +21,8 @@ public class TripleWhaleEventConsumer :
     IConsumer<OrderPlacedEvent>,
     IConsumer<OrderPaidEvent>,
     IConsumer<OrderRefundedEvent>,
+    IConsumer<OrderVoidedEvent>,
+    IConsumer<OrderStatusChangedEvent>,
     IConsumer<CustomerRegisteredEvent>,
     IConsumer<EntityUpdatedEvent<Customer>>,
     IConsumer<EntityInsertedEvent<Product>>,
@@ -93,6 +95,28 @@ public class TripleWhaleEventConsumer :
 
         await SyncOrderAsync(order, "order.refunded");
         await SendOrderEventAsync(order, "Refund");
+    }
+
+    /// <summary>
+    /// Handle the order voided event
+    /// </summary>
+    public async Task HandleEventAsync(OrderVoidedEvent eventMessage)
+    {
+        if (eventMessage?.Order is not { } order)
+            return;
+
+        await SyncOrderAsync(order, "order.voided");
+    }
+
+    /// <summary>
+    /// Handle the order status changed event
+    /// </summary>
+    public async Task HandleEventAsync(OrderStatusChangedEvent eventMessage)
+    {
+        if (eventMessage?.Order is not { } order)
+            return;
+
+        await SyncOrderAsync(order, "order.status_changed");
     }
 
     /// <summary>

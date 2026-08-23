@@ -114,7 +114,7 @@ public class TripleWhaleEventBuilder
                         RefundId = order.Id + "-refund",
                         RefundedAt = FormatDate(DateTime.UtcNow),
                         TotalRefund = order.RefundedAmount,
-                        LineItems = lineItems
+                        LineItems = BuildRefundLineItems(lineItems, order.RefundedAmount)
                     }
                 }
                 : null,
@@ -275,6 +275,33 @@ public class TripleWhaleEventBuilder
             CountryCode = country?.TwoLetterIsoCode,
             ProvinceCode = stateProvince?.Abbreviation
         };
+    }
+
+    /// <summary>
+    /// Builds refund line items by distributing the refunded amount proportionally across the order items
+    /// </summary>
+    private static List<OrderLineItemDto> BuildRefundLineItems(List<OrderLineItemDto> lineItems, decimal refundedAmount)
+    {
+        if (lineItems is null || !lineItems.Any())
+            return lineItems;
+
+        var totalOrderAmount = lineItems.Sum(item => item.Price * item.Quantity);
+        if (totalOrderAmount <= 0)
+            return lineItems;
+
+        var ratio = refundedAmount / totalOrderAmount;
+
+        return lineItems.Select(item => new OrderLineItemDto
+        {
+            Id = item.Id,
+            Name = item.Name,
+            Price = Math.Round(item.Price * ratio, 4),
+            Quantity = item.Quantity,
+            ProductId = item.ProductId,
+            ProductName = item.ProductName,
+            VariantId = item.VariantId,
+            Sku = item.Sku
+        }).ToList();
     }
 
     /// <summary>

@@ -106,7 +106,7 @@ public class TripleWhaleEventBuilder
                 : new List<string> { order.PaymentMethodSystemName },
             Status = order.OrderStatus.ToString(),
             Void = order.OrderStatus == OrderStatus.Cancelled,
-            Refunds = order.RefundedAmount > 0
+            Refunds = order.OrderStatus != OrderStatus.Cancelled && order.RefundedAmount > 0
                 ? new List<OrderRefundDto>
                 {
                     new OrderRefundDto

@@ -93,6 +93,10 @@ public class TripleWhaleEventConsumer :
             return;
 
         await SyncOrderAsync(order, "order.refunded");
+
+        if (order.OrderStatus == OrderStatus.Cancelled)
+            return;
+
         await SendOrderEventAsync(order, "Refund");
     }
 

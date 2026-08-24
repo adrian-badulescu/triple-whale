@@ -82,7 +82,6 @@ public class TripleWhaleEventConsumer :
             return;
 
         await SyncOrderAsync(order, "order.paid");
-        await SendOrderEventAsync(order, "Purchase");
     }
 
     /// <summary>

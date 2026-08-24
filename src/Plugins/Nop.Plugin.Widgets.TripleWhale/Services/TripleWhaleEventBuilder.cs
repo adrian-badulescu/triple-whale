@@ -112,7 +112,7 @@ public class TripleWhaleEventBuilder
                     new OrderRefundDto
                     {
                         RefundId = order.Id + "-refund",
-                        RefundedAt = FormatDate(DateTime.UtcNow),
+                        RefundedAt = FormatDate(await GetRefundDateAsync(order)),
                         TotalRefund = order.RefundedAmount,
                         LineItems = BuildRefundLineItems(lineItems, order.RefundedAmount)
                     }
@@ -275,6 +275,25 @@ public class TripleWhaleEventBuilder
             CountryCode = country?.TwoLetterIsoCode,
             ProvinceCode = stateProvince?.Abbreviation
         };
+    }
+
+    /// <summary>
+    /// Determines the refund timestamp from the order notes. nopCommerce does not persist a dedicated
+    /// refund date on the Order entity, but it adds an order note ("Order has been refunded. Amount = ...")
+    /// whose CreatedOnUtc reflects the actual refund time. Falls back to the current UTC time when no note is found.
+    /// </summary>
+    private async Task<DateTime> GetRefundDateAsync(Order order)
+    {
+        var notes = await _orderService.GetOrderNotesByOrderIdAsync(order.Id);
+
+        var refundNote = notes
+            .Where(note => note.Note is not null &&
+                           note.Note.Contains("refunded", StringComparison.OrdinalIgnoreCase) &&
+                           note.Note.Contains("Amount", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(note => note.CreatedOnUtc)
+            .FirstOrDefault();
+
+        return refundNote?.CreatedOnUtc ?? DateTime.UtcNow;
     }
 
     /// <summary>
